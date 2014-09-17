@@ -48,6 +48,8 @@ extern void     (*cliPortPrint)(char *str);
 
 extern void     (*cliPortPrintF)(const char * fmt, ...);
 
+extern void     (*cliPortPrintBinary)(uint8_t *buf, uint16_t length);
+
 ///////////////////////////////////////
 
 extern uint8_t cliBusy;
@@ -120,4 +122,4 @@ void telemetryCLI(void);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
+int communicatorStatusType;

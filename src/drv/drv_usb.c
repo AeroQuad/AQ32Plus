@@ -150,6 +150,7 @@ void checkUsbActive(uint8_t forceCheck)
 		    cliPortPrint           = &usbPrint;
 		    cliPortPrintF          = &usbPrintF;
 		    cliPortRead            = &usbRead;
+		    cliPortPrintBinary	   = &usbPrintBinary;
 
 	        mavlinkPortPrintBinary = &usbPrintBinary;
 	    }
@@ -160,6 +161,7 @@ void checkUsbActive(uint8_t forceCheck)
             cliPortPrint           = &uart1Print;
 		    cliPortPrintF          = &uart1PrintF;
 		    cliPortRead            = &uart1Read;
+		    cliPortPrintBinary	   = &uart1PrintBinary;
 
 	 	    mavlinkPortPrintBinary = &uart1PrintBinary;
 

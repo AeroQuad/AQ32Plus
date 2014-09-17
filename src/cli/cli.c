@@ -48,6 +48,8 @@ void     (*cliPortPrint)(char *str);
 
 void     (*cliPortPrintF)(const char * fmt, ...);
 
+void     (*cliPortPrintBinary)(uint8_t *buf, uint16_t length);
+
 ///////////////////////////////////////
 
 uint8_t cliBusy = false;
@@ -133,6 +135,20 @@ void readCliPID(unsigned char PIDid)
   pid->integratorState = 0.0f;
   pid->filterState     = 0.0f;
   pid->prevResetState  = false;
+}
+
+void writeInt(int value)
+{
+	unsigned char intByte[4];
+	memcpy(intByte, &value, 4);
+	cliPortPrintBinary(intByte, 4);
+}
+
+void writeShort(short value)
+{
+	unsigned char shortByte[2];
+	memcpy(shortByte, &value, 2);
+	cliPortPrintBinary(shortByte, 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -605,6 +621,47 @@ void cliCom(void)
 				break;
 
 			///////////////////////////////
+
+			case '@': // Communicator Flight Status
+				switch (communicatorStatusType)
+				{
+				case 3:
+					cliPortPrintF("1");
+					writeShort(rxCommand[4]);
+					writeShort(rxCommand[5]);
+					writeShort(rxCommand[6]);
+					writeShort(rxCommand[7]);
+					writeShort(TIM8->CCR4);
+					writeShort(TIM8->CCR3);
+					writeShort(TIM8->CCR2);
+					writeShort(TIM8->CCR1);
+					writeShort(TIM2->CCR1);
+					writeShort(TIM2->CCR2);
+					writeShort(TIM3->CCR1);
+					writeShort(TIM3->CCR2);
+					cliPortPrint("\n"); // 26 bytes
+					communicatorStatusType = 0;
+					break;
+				default:
+					cliPortPrintF("0");
+					cliPortPrintF("%1d", armed);
+					cliPortPrintF("%1d", flightMode);
+					cliPortPrintF("%1d", verticalModeState);
+					writeShort(batteryVoltage);
+					writeShort(hEstimate);
+					writeShort(sensors.attitude500Hz[ROLL] * R2D * 10);
+					writeShort(sensors.attitude500Hz[PITCH] * R2D * 10);
+					writeShort(sensors.attitude500Hz[YAW] * R2D * 10);
+					writeShort(rxCommand[0]);
+					writeShort(rxCommand[1]);
+					writeShort(rxCommand[2]);
+					writeShort(rxCommand[3]);
+					cliPortPrint("\n"); // 23 bytes
+					communicatorStatusType++;
+					break;
+				}
+				validCliCommand = false;
+				break;
 
 			///////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////
