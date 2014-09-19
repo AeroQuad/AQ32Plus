@@ -622,47 +622,6 @@ void cliCom(void)
 
 			///////////////////////////////
 
-			case '@': // Communicator Flight Status
-				switch (communicatorStatusType)
-				{
-				case 3:
-					cliPortPrintF("1");
-					writeShort(rxCommand[4]);
-					writeShort(rxCommand[5]);
-					writeShort(rxCommand[6]);
-					writeShort(rxCommand[7]);
-					writeShort(TIM8->CCR4);
-					writeShort(TIM8->CCR3);
-					writeShort(TIM8->CCR2);
-					writeShort(TIM8->CCR1);
-					writeShort(TIM2->CCR1);
-					writeShort(TIM2->CCR2);
-					writeShort(TIM3->CCR1);
-					writeShort(TIM3->CCR2);
-					cliPortPrint("\n"); // 26 bytes
-					communicatorStatusType = 0;
-					break;
-				default:
-					cliPortPrintF("0");
-					cliPortPrintF("%1d", armed);
-					cliPortPrintF("%1d", flightMode);
-					cliPortPrintF("%1d", verticalModeState);
-					writeShort(batteryVoltage);
-					writeShort(hEstimate);
-					writeShort(sensors.attitude500Hz[ROLL] * R2D * 10);
-					writeShort(sensors.attitude500Hz[PITCH] * R2D * 10);
-					writeShort(sensors.attitude500Hz[YAW] * R2D * 10);
-					writeShort(rxCommand[0]);
-					writeShort(rxCommand[1]);
-					writeShort(rxCommand[2]);
-					writeShort(rxCommand[3]);
-					cliPortPrint("\n"); // 23 bytes
-					communicatorStatusType++;
-					break;
-				}
-				validCliCommand = false;
-				break;
-
 			///////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////
@@ -915,6 +874,133 @@ void cliCom(void)
 
 			///////////////////////////////
 
+			////////////////////////////////////////////////////////////
+			//   Communicator Messages   ///////////////////////////////
+			////////////////////////////////////////////////////////////
+
+			///////////////////////////////
+
+			case '@': // Communicator Messages
+			{
+				uint8_t msgType = cliPortRead();
+				switch (msgType) //update this
+				{
+				case 's':
+					if (statusType++ < 3)
+					{
+						cliPortPrint("0");
+						cliPortPrintF("%1d", armed);
+						cliPortPrintF("%1d", flightMode);
+						cliPortPrintF("%1d", verticalModeState);
+						writeShort(batteryVoltage);
+						writeShort(hEstimate);
+						writeShort(sensors.attitude500Hz[ROLL] * R2D * 10);
+						writeShort(sensors.attitude500Hz[PITCH] * R2D * 10);
+						writeShort(sensors.attitude500Hz[YAW] * R2D * 10);
+						writeShort(rxCommand[0]);
+						writeShort(rxCommand[1]);
+						writeShort(rxCommand[2]);
+						writeShort(rxCommand[3]);
+						cliPortPrint("\n"); // 23 bytes
+					}
+					else
+					{
+						cliPortPrint("1");
+						writeShort(rxCommand[4]);
+						writeShort(rxCommand[5]);
+						writeShort(rxCommand[6]);
+						writeShort(rxCommand[7]);
+						writeShort(TIM8->CCR4);
+						writeShort(TIM8->CCR3);
+						writeShort(TIM8->CCR2);
+						writeShort(TIM8->CCR1);
+						writeShort(TIM2->CCR1);
+						writeShort(TIM2->CCR2);
+						writeShort(TIM3->CCR1);
+						writeShort(TIM3->CCR2);
+						cliPortPrint("\n"); // 26 bytes
+						statusType = 0;
+					}
+					break;
+				case 'O': // Define waypoints
+				{
+			        int index = readFloatCLI();
+			        if (index >= 0)
+			        {
+			          waypoint[index].latitude = readFloatCLI();
+			          waypoint[index].longitude = readFloatCLI();
+			          waypoint[index].altitude = readFloatCLI();
+			          waypoint[index].speed = 1;
+			          waypoint[index].type = 0;
+			        }
+			        else if (index == -1)
+			          waypointCount = readFloatCLI();
+					break;
+				}
+			    case 'o': // Send waypoints
+				{
+					int index = readFloatCLI();
+					if (index < 0)
+						cliPortPrintF("%d\n", waypointCount);
+					else
+					{
+						cliPortPrintF("%d,%d,%d,%d\n",
+							index,
+							waypoint[index].latitude,
+							waypoint[index].longitude,
+							waypoint[index].altitude,
+							waypoint[index].speed,
+							waypoint[index].type);
+					}
+				}
+			      break;
+			    case '^':
+			    {
+			        int type = readFloatCLI();
+			        if (type == 0) // send shortened position data
+			        {
+						cliPortPrintF("%d,%d,%.1f\n",
+								gps.latitude,
+								gps.longitude,
+								sensors.attitude500Hz[YAW]*R2D);
+			        }
+			        if (type == 1)
+			        {
+						cliPortPrintF("%d,%d,%d\n",
+							  gps.hMSL,
+							  gps.heading,
+							  gps.speed);
+			        }
+			        if (type == 2)
+			        {
+						cliPortPrintF("%d,%d,%d\n",
+							  gps.numSats,
+							  gps.hDop,
+							  gps.fix);
+			        }
+			        if (type == 3) // send stored home position
+			        {
+						cliPortPrintF("%d,%d,%d\n",
+							  homePosition.latitude,
+							  homePosition.longitude,
+							  homePosition.altitude);
+			        }
+			      break;
+			    }
+			    case '<': // send autoNav status
+			    	cliPortPrintF("%d\n", autoNavState);
+			      break;
+			    case '>': // setup autopilot states
+			        autoNavState = readFloatCLI();
+			      break;
+				}
+				cliQuery = 'x';
+				validCliCommand = false;
+				break;
+			}
+
+			///////////////////////////////
+
 			case '?': // Command Summary
 				cliBusy = true;
 
@@ -985,6 +1071,7 @@ void cliCom(void)
 				break;
 
 				///////////////////////////////
+
 		}
     }
 }

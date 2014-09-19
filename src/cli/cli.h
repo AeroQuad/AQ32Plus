@@ -122,4 +122,4 @@ void telemetryCLI(void);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int communicatorStatusType;
+int statusType; // Selects which vehicle status is sent to Communicator
