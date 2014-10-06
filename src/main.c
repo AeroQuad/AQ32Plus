@@ -449,12 +449,19 @@ int main(void)
             if (execUp == false)
                 execUpCount++;
 
-            if ((execUpCount == 5) && (execUp == false))
+            // Initialize sensors after being warmed up
+            if ((execUpCount == 20) && (execUp == false))
             {
-				execUp = true;
+            	computeMPU6000RTData();
+                initMag();
+                initPressure();
+			}
 
-                pwmEscInit();
-
+            // Initialize PWM and set mag after sensor warmup
+            if ((execUpCount == 25) && (execUp == false))
+            {
+    			execUp = true;
+    			pwmEscInit();
                 homeData.magHeading = sensors.attitude500Hz[YAW];
 			}
 

@@ -874,9 +874,9 @@ void cliCom(void)
 
 			///////////////////////////////
 
-			////////////////////////////////////////////////////////////
-			//   Communicator Messages   ///////////////////////////////
-			////////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////////////////////////////////
+			//   Communicator Messages   /////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////////////////////////////////
 
 			///////////////////////////////
 
@@ -892,8 +892,9 @@ void cliCom(void)
 						cliPortPrintF("%1d", armed);
 						cliPortPrintF("%1d", flightMode);
 						cliPortPrintF("%1d", verticalModeState);
-						writeShort(batteryVoltage);
-						writeShort(hEstimate);
+						cliPortPrintF("%1d", execUp);
+						writeShort(batteryVoltage * 100);
+						writeShort(hEstimate * 100);
 						writeShort(sensors.attitude500Hz[ROLL] * R2D * 10);
 						writeShort(sensors.attitude500Hz[PITCH] * R2D * 10);
 						writeShort(sensors.attitude500Hz[YAW] * R2D * 10);
@@ -901,7 +902,7 @@ void cliCom(void)
 						writeShort(rxCommand[1]);
 						writeShort(rxCommand[2]);
 						writeShort(rxCommand[3]);
-						cliPortPrint("\n"); // 23 bytes
+						cliPortPrint("\n"); // 24 bytes
 					}
 					else
 					{
@@ -927,30 +928,35 @@ void cliCom(void)
 			        int index = readFloatCLI();
 			        if (index >= 0)
 			        {
-			          waypoint[index].latitude = readFloatCLI();
-			          waypoint[index].longitude = readFloatCLI();
-			          waypoint[index].altitude = readFloatCLI();
-			          waypoint[index].speed = 1;
-			          waypoint[index].type = 0;
+//			          waypoint[index].latitude = readFloatCLI();
+//			          waypoint[index].longitude = readFloatCLI();
+//			          waypoint[index].altitude = readFloatCLI();
+//			          waypoint[index].speed = 1;
+//			          waypoint[index].type = 0;
+			          eepromConfig.route[index].latitude = readFloatCLI();
+			          eepromConfig.route[index].longitude = readFloatCLI();
+			          eepromConfig.route[index].altitude = readFloatCLI();
+			          eepromConfig.route[index].speed = 1;
+			          eepromConfig.route[index].type = 0;
 			        }
 			        else if (index == -1)
-			          waypointCount = readFloatCLI();
+			        	eepromConfig.storedWaypointCount = readFloatCLI();
 					break;
 				}
 			    case 'o': // Send waypoints
 				{
 					int index = readFloatCLI();
 					if (index < 0)
-						cliPortPrintF("%d\n", waypointCount);
+						cliPortPrintF("%d\n", eepromConfig.storedWaypointCount);
 					else
 					{
 						cliPortPrintF("%d,%d,%d,%d\n",
 							index,
-							waypoint[index].latitude,
-							waypoint[index].longitude,
-							waypoint[index].altitude,
-							waypoint[index].speed,
-							waypoint[index].type);
+							eepromConfig.route[index].latitude,
+							eepromConfig.route[index].longitude,
+							eepromConfig.route[index].altitude,
+							eepromConfig.route[index].speed,
+							eepromConfig.route[index].type);
 					}
 				}
 			      break;
@@ -987,12 +993,15 @@ void cliCom(void)
 			        }
 			      break;
 			    }
+			    case '!': // send software version
+			    	cliPortPrintF("%s\n", __AQ32PLUS_VERSION);
+			    	break;
 			    case '<': // send autoNav status
 			    	cliPortPrintF("%d\n", autoNavState);
-			      break;
+			    	break;
 			    case '>': // setup autopilot states
 			        autoNavState = readFloatCLI();
-			      break;
+			        break;
 				}
 				cliQuery = 'x';
 				validCliCommand = false;
@@ -1000,6 +1009,13 @@ void cliCom(void)
 			}
 
 			///////////////////////////////
+
+			//////////////////////////////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////////////////////////////////
+
+			///////////////////////////////
+
 
 			case '?': // Command Summary
 				cliBusy = true;

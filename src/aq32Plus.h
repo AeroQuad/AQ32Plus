@@ -36,6 +36,8 @@
 
 #pragma once
 
+#include "navigation/navigation.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define __AQ32PLUS_VERSION "1.0"
@@ -429,6 +431,11 @@ typedef struct eepromConfig_t
 
     uint8_t externalHMC5883;
     uint8_t externalMS5611;
+
+    ///////////////////////////////////
+
+    uint8_t storedWaypointCount;
+    waypointType route[MAX_WAYPOINTS];
 
     ///////////////////////////////////
 

@@ -13,7 +13,7 @@
 /**
  * GPS navigation global declaration
  */
-#define MAX_WAYPOINTS 16  // needed for EEPROM adr offset declarations
+#define MAX_WAYPOINTS 32  // needed for EEPROM adr offset declarations
 #define PRE_WAYPOINT -1
 #define UNINITIALIZED -2
 
@@ -45,16 +45,16 @@ int waypointCount;
 //  GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION};
 //GeodeticPosition positionHoldPointToReach = GPS_INVALID_POSITION;
 
-struct waypointType
+typedef struct waypointType
 {
 	int latitude;
 	int longitude;
 	int altitude;
 	int speed;
 	int type;
-};
+} waypointType;
 
-struct waypointType waypoint[MAX_WAYPOINTS];
+//waypointType waypoint[MAX_WAYPOINTS];
 
 struct homePositionType
 {
