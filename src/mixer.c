@@ -232,8 +232,6 @@ void mixTable(void)
     float maxDeltaThrottle = (float)MAXCOMMAND - rxCommand[THROTTLE];
     float minDeltaThrottle = rxCommand[THROTTLE] - eepromConfig.minThrottle;
     float deltaThrottle = (minDeltaThrottle<maxDeltaThrottle) ? minDeltaThrottle : maxDeltaThrottle;
-    float minimumThrottle = rxCommand[THROTTLE] - deltaThrottle;
-    float maximumThrottle = rxCommand[THROTTLE] + deltaThrottle;
     for (i=0; i<numberMotor; i++)
     {
 		motor[i] = constrain(motor[i], rxCommand[THROTTLE] - deltaThrottle, rxCommand[THROTTLE] + deltaThrottle);
