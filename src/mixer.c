@@ -207,25 +207,39 @@ void mixTable(void)
 
     // this is a way to still have good gyro corrections if any motor reaches its max.
 
-    maxMotor = motor[0];
+//    maxMotor = motor[0];
+//
+//    for (i = 1; i < numberMotor; i++)
+//        if (motor[i] > maxMotor)
+//            maxMotor = motor[i];
+//
+//    for (i = 0; i < numberMotor; i++)
+//    {
+//        if (maxMotor > eepromConfig.maxThrottle)
+//            motor[i] -= maxMotor - eepromConfig.maxThrottle;
+//
+//        motor[i] = constrain(motor[i], eepromConfig.minThrottle, eepromConfig.maxThrottle);
+//
+//        if ((rxCommand[THROTTLE]) < eepromConfig.minCheck)
+//        {
+//            motor[i] = eepromConfig.minThrottle;
+//        }
+//
+//        if ( armed == false )
+//            motor[i] = (float)MINCOMMAND;
+//    }
 
-    for (i = 1; i < numberMotor; i++)
-        if (motor[i] > maxMotor)
-            maxMotor = motor[i];
-
-    for (i = 0; i < numberMotor; i++)
+    float maxDeltaThrottle = (float)MAXCOMMAND - rxCommand[THROTTLE];
+    float minDeltaThrottle = rxCommand[THROTTLE] - eepromConfig.minThrottle;
+    float deltaThrottle = (minDeltaThrottle<maxDeltaThrottle) ? minDeltaThrottle : maxDeltaThrottle;
+    float minimumThrottle = rxCommand[THROTTLE] - deltaThrottle;
+    float maximumThrottle = rxCommand[THROTTLE] + deltaThrottle;
+    for (i=0; i<numberMotor; i++)
     {
-        if (maxMotor > eepromConfig.maxThrottle)
-            motor[i] -= maxMotor - eepromConfig.maxThrottle;
-
-        motor[i] = constrain(motor[i], eepromConfig.minThrottle, eepromConfig.maxThrottle);
-
+		motor[i] = constrain(motor[i], rxCommand[THROTTLE] - deltaThrottle, rxCommand[THROTTLE] + deltaThrottle);
         if ((rxCommand[THROTTLE]) < eepromConfig.minCheck)
-        {
             motor[i] = eepromConfig.minThrottle;
-        }
-
-        if ( armed == false )
+        if (armed == false)
             motor[i] = (float)MINCOMMAND;
     }
 }
