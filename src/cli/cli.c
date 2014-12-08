@@ -923,16 +923,11 @@ void cliCom(void)
 						statusType = 0;
 					}
 					break;
-				case 'O': // Define waypoints
+				case 'O': // Read in waypoints
 				{
 			        int index = readFloatCLI();
 			        if (index >= 0)
 			        {
-//			          waypoint[index].latitude = readFloatCLI();
-//			          waypoint[index].longitude = readFloatCLI();
-//			          waypoint[index].altitude = readFloatCLI();
-//			          waypoint[index].speed = 1;
-//			          waypoint[index].type = 0;
 			          eepromConfig.route[index].latitude = readFloatCLI();
 			          eepromConfig.route[index].longitude = readFloatCLI();
 			          eepromConfig.route[index].altitude = readFloatCLI();
@@ -943,7 +938,7 @@ void cliCom(void)
 			        	eepromConfig.storedWaypointCount = readFloatCLI();
 					break;
 				}
-			    case 'o': // Send waypoints
+			    case 'o': // Transmit out waypoints
 				{
 					int index = readFloatCLI();
 					if (index < 0)
@@ -997,10 +992,10 @@ void cliCom(void)
 			    	cliPortPrintF("%s\n", __AQ32PLUS_VERSION);
 			    	break;
 			    case '<': // send autoNav status
-			    	cliPortPrintF("%d\n", autoNavState);
+			    	cliPortPrintF("%d\n", getAutoNavState());
 			    	break;
 			    case '>': // setup autopilot states
-			        autoNavState = readFloatCLI();
+			        setAutoNavState(readFloatCLI());
 			        break;
 				}
 				cliQuery = 'x';

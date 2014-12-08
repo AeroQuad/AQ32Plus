@@ -78,6 +78,7 @@ extern void     (*openLogPortPrintF)(const char * fmt, ...);
 #define AUX6     9
 #define AUX7     10
 #define AUX8     11
+#define LASTCHANNEL AUX8+1
 
 #define XAXIS    0
 #define YAXIS    1
@@ -183,7 +184,7 @@ extern homeData_t homeData;
 // PID Definitions
 ///////////////////////////////////////////////////////////////////////////////
 
-#define NUMBER_OF_PIDS   12
+#define NUMBER_OF_PIDS   15
 
 #define ROLL_RATE_PID     0
 #define PITCH_RATE_PID    1
@@ -201,6 +202,10 @@ extern homeData_t homeData;
 #define E_PID            10
 #define H_PID            11
 
+#define AUTONAV_PITCH_PID	12
+#define AUTONAV_ROLL_PID	13
+#define AUTONAV_YAW_PID		14
+
 ///////////////////////////////////////////////////////////////////////////////
 // Mixer Configurations
 ///////////////////////////////////////////////////////////////////////////////
@@ -216,7 +221,7 @@ enum { MIXERTYPE_TRI,
 // Flight Modes
 ///////////////////////////////////////////////////////////////////////////////
 
-enum { RATE, ATTITUDE, GPS };
+enum { RATE, ATTITUDE, SIMPLE, GPS, POSITIONHOLD, RETURNTOHOME };
 
 ///////////////////////////////////////////////////////////////////////////////
 // Vertical Mode States
@@ -420,7 +425,6 @@ typedef struct eepromConfig_t
     ///////////////////////////////////
 
     uint16_t activeTelemetry;
-
     uint8_t  mavlinkEnabled;
 
     ///////////////////////////////////
@@ -434,8 +438,10 @@ typedef struct eepromConfig_t
 
     ///////////////////////////////////
 
-    uint8_t storedWaypointCount;
-    waypointType route[MAX_WAYPOINTS];
+    uint8_t 		storedWaypointCount;
+    waypointType	route[MAX_WAYPOINTS];
+    float			xteScaling;
+    float			taeScaling;
 
     ///////////////////////////////////
 

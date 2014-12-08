@@ -48,7 +48,10 @@
 
 #define THROTTLE_WINDOW    48
 
+#define CHANGE_RANGE 100
+
 extern float rxCommand[12];
+extern float previousRxCommand[12];
 
 extern uint8_t commandInDetent[3];
 extern uint8_t previousCommandInDetent[3];

@@ -8,42 +8,38 @@
 #ifndef NAVIGATION_H_
 #define NAVIGATION_H_
 
-//#pragma once
-
-/**
- * GPS navigation global declaration
- */
 #define MAX_WAYPOINTS 32  // needed for EEPROM adr offset declarations
 #define PRE_WAYPOINT -1
 #define UNINITIALIZED -2
 
-#define AUTO_NAVIGATION 1
+#define AUTONAV_DISABLED 0
+#define AUTONAV_ENABLED 1
 #define POSITION_HOLD 2
 #define RETURN_TO_HOME 3
 #define SET_HOME_POSITION 4
 
-//#include <GpsAdapter.h>
+//#define MIN_DISTANCE_TO_REACHED 2000
+#define MAX_ALTITUDE 2000.0
+#define MAXBANKANGLE 30 // degrees, should I change all angle errors to max bank angle error?
 
-//#define DEFAULT_HOME_ALTITUDE 5  // default home base altitude is equal to 5 meter
-//GeodeticPosition homePosition = GPS_INVALID_POSITION;
-//GeodeticPosition missionPositionToReach = GPS_INVALID_POSITION;  // in case of no GPS navigator, indicate the home position into the OSD
+#define MAXPWM 500 // max PWM to output
+#define MAXTRACKANGLE 60 // degrees
+extern const double Deg2PWMFactor;// = MAXPWM/MAXTRACKANGLE; // convert degrees into PWM
 
-int autoNavState;
-int waypointCount;
-//int gpsRollAxisCorrection = 0;
-//int gpsPitchAxisCorrection = 0;
-//int gpsYawAxisCorrection = 0;
-//uint8_t isPositionHoldInitialized = false;
-//uint8_t isGpsNavigationInitialized = false;
-//
-//int waypointIndex = UNINITIALIZED;
-//float distanceToDestination = 99999999.0;
-//GeodeticPosition waypoint[MAX_WAYPOINTS] = {
-//  GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION,
-//  GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION,
-//  GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION,
-//  GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION, GPS_INVALID_POSITION};
-//GeodeticPosition positionHoldPointToReach = GPS_INVALID_POSITION;
+#define MAXCROSSTRACKANGLE 60 // degrees
+#define MAXCROSSTRACKDISTANCE 15 // meters
+extern const double Meters2DegFactor;// = MAXCROSSTRACKANGLE/MAXCROSSTRACKDISTANCE; // convert meters into degrees
+
+typedef enum autoNavStates
+{
+	INITIALIZE,
+	NEXT_WAYPOINT,
+	PROCESS_NAVIGATION,
+	CAPTURE_WAYPOINT,
+	FINISH_ROUTE,
+	DISABLED
+} autoNavStates;
+autoNavStates nextNavState;
 
 typedef struct waypointType
 {
@@ -54,30 +50,37 @@ typedef struct waypointType
 	int type;
 } waypointType;
 
-//waypointType waypoint[MAX_WAYPOINTS];
-
 struct homePositionType
 {
 	int latitude;
 	int longitude;
 	int altitude;
 } homePosition;
-//
-///* New updated GPS Navigation variables */
-//double fromVector[3], toVector[3], presentPosition[3];
-//double presentPositionEast[3], presentPositionNorth[3];
-//double normalRangeVector[3], rangeVector[3];
-//double zVector[3] = {0.0, 0.0, 1.0};
-//double normalVector[3], normalPerpendicularVector[3], alongPathVector[3], negNormalVector[3];
-//GeodeticPosition fromWaypoint, toWaypoint, currentLocation, followingWaypoint;
-//double desiredHeading, currentHeading, groundTrackHeading;
-//double trackAngleError, crossTrackError, crossTrack, alongPathDistance;
-//double distanceToNextWaypoint = 99999999.0;
-//double distanceToFollowingWaypoint = 99999999.0;
-//double testDistanceWaypoint = 99999999.0;
-//const double earthRadius = 6378100.0; // meters
-//double waypointCaptureDistance = 2.0; // meters
-//float forwardSpeed = 15.0;
+
+int autoNavState;
+int waypointCount;
+extern int waypointIndex;
+
+/* New updated GPS Navigation variables */
+double fromVector[3], toVector[3], presentPosition[3];
+double presentPositionEast[3], presentPositionNorth[3];
+double normalRangeVector[3], rangeVector[3];
+extern const double zVector[3];
+double normalVector[3], normalPerpendicularVector[3], alongPathVector[3], negNormalVector[3];
+waypointType fromWaypoint, toWaypoint, currentPosition, followingWaypoint;
+double desiredHeading, groundTrackHeading;
+double trackAngleError, crossTrackError, crossTrack, alongPathDistance;
+double distanceToNextWaypoint;
+extern const double earthRadius; // meters
+double waypointCaptureDistance; // meters
+//float distanceToDestination = 99999999.0;
+double currentHeading;
+
+int autoNavRollAxisCorrection;
+int autoNavPitchAxisCorrection;
+int autoNavYawAxisCorrection;
+float forwardSpeed;
+
 //byte navigatorSerialCommand = OFF; // TODO: remove when autopilot working
 //bool isRouteInitialized = false;
 //double distanceToGoAlongPath, distanceToGoPosition; // TODO: remove?
@@ -104,7 +107,17 @@ struct homePositionType
 //void evaluateMissionPositionToReach();
 //void processGpsNavigation();
 
+// Matrix operations
+double vectorDotProduct(double vector1[], double vector2[]);
+void vectorCrossProduct(double vectorC[3], double vectorA[3], double vectorB[3]);
+void vectorNormalize(double result[]);
+void positionVector(double *vector, waypointType position);
 
+double adjustHeading(double currentHeading, double desiredHeading);
+void setAutoNavState(int state);
+int getAutoNavState();
+int getWaypointCount();
+extern void processNavigation();
 
 
 #endif /* NAVIGATION_H_ */
