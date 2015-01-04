@@ -95,6 +95,7 @@
 #include "accelCalibrationMPU.h"
 #include "batMon.h"
 #include "cli.h"
+#include "navigation.h"
 #include "computeAxisCommands.h"
 #include "config.h"
 #include "coordinateTransforms.h"
@@ -116,7 +117,5 @@
 #include "utilities.h"
 #include "vertCompFilter.h"
 #include "watchdogs.h"
-
-#include "navigation.h"
 
 ///////////////////////////////////////////////////////////////////////////////

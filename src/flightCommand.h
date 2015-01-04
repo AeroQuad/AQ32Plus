@@ -91,3 +91,10 @@ extern float    verticalReferenceCommand;
 void processFlightCommands(void);
 
 ///////////////////////////////////////////////////////////////////////////////
+// Auto Navigation Variables
+///////////////////////////////////////////////////////////////////////////////
+
+extern void processAutoNavigation();
+extern void processPositionHold();
+extern void processReturnToHome();
+uint8_t autoNavMode;

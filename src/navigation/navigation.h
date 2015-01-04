@@ -117,7 +117,10 @@ double adjustHeading(double currentHeading, double desiredHeading);
 void setAutoNavState(int state);
 int getAutoNavState();
 int getWaypointCount();
-extern void processNavigation();
+
+void processAutoNavigation();
+void processPositionHold();
+void processReturnToHome();
 
 
 #endif /* NAVIGATION_H_ */

@@ -102,7 +102,7 @@ int getWaypointCount()
 	return waypointCount;
 }
 
-void processNavigation()
+void processAutoNavigation()
 {
 	currentPosition.latitude = gps.latitude;
 	currentPosition.longitude = gps.longitude;
@@ -208,4 +208,14 @@ void processNavigation()
 	default:
 		break;
 	}
+}
+
+void processPositionHold()
+{
+
+}
+
+void processReturnToHome()
+{
+
 }

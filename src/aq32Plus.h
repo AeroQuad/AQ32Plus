@@ -88,6 +88,19 @@ extern void     (*openLogPortPrintF)(const char * fmt, ...);
 #define MIDCOMMAND  3000
 #define MAXCOMMAND  4000
 
+// These are modeTypes
+#define MODE_NONE			0
+#define MODE_ATTITUDE		1
+#define MODE_RATE			2
+#define MODE_SIMPLE			3
+#define MODE_AUTONAV		4
+#define MODE_POSITIONHOLD	5
+#define MODE_RETURNTOHOME	6
+#define MODE_ALTHOLD		7
+#define MODE_PANIC			8
+
+#define MODE_SLOTS 			12 // number of slots to hold modes
+
 ///////////////////////////////////////////////////////////////////////////////
 // Misc Type Definitions
 ///////////////////////////////////////////////////////////////////////////////
@@ -180,6 +193,17 @@ typedef struct homeData_t
 
 extern homeData_t homeData;
 
+typedef struct modeData_t
+{
+	uint8_t modeType;	// see defines for modeType in aq32Plus.h
+	uint8_t channel; 	// rx channel associated with this mode
+	uint8_t state;		// determines if mode is on(1) or off(0)
+	int32_t minChannelValue; // min rx value for mode on
+	int32_t maxChannelValue; // max rx value for mode on
+} modeData_t;
+
+extern modeData_t mode;
+
 ///////////////////////////////////////////////////////////////////////////////
 // PID Definitions
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,7 +245,7 @@ enum { MIXERTYPE_TRI,
 // Flight Modes
 ///////////////////////////////////////////////////////////////////////////////
 
-enum { RATE, ATTITUDE, SIMPLE, GPS, POSITIONHOLD, RETURNTOHOME };
+enum { RATE, ATTITUDE, SIMPLE, GPS};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Vertical Mode States
@@ -442,6 +466,10 @@ typedef struct eepromConfig_t
     waypointType	route[MAX_WAYPOINTS];
     float			xteScaling;
     float			taeScaling;
+
+    ///////////////////////////////////
+
+    modeData_t mode[MODE_SLOTS];
 
     ///////////////////////////////////
 

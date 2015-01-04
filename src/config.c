@@ -510,6 +510,74 @@ void checkFirstTime(bool eepromReset)
         eepromConfig.PID[AUTONAV_YAW_PID].P		= 1.0;
         eepromConfig.PID[AUTONAV_YAW_PID].I		= 0.0;
         eepromConfig.PID[AUTONAV_YAW_PID].D		= 0.0;
+
+        ///////////////////////////////
+
+		// MODE_NONE			0
+		// MODE_ATTITUDE		1
+		// MODE_RATE			2
+		// MODE_SIMPLE			3
+		// MODE_AUTONAV			4
+		// MODE_POSITIONHOLD	5
+		// MODE_RETURNTOHOME	6
+		// MODE_ALTHOLD			7
+		// MODE_PANIC			8
+		// MODE_COUNT 			10 // defines number of modes
+
+		eepromConfig.mode[1].modeType = MODE_ATTITUDE;
+        eepromConfig.mode[1].channel = AUX1;
+		eepromConfig.mode[1].state = true;
+		eepromConfig.mode[1].minChannelValue = 1000;
+		eepromConfig.mode[1].maxChannelValue = 1500;
+
+        eepromConfig.mode[2].modeType = MODE_RATE;
+        eepromConfig.mode[2].channel = AUX1;
+		eepromConfig.mode[2].state = true;
+		eepromConfig.mode[2].minChannelValue = 1500;
+		eepromConfig.mode[2].maxChannelValue = 2000;
+
+        eepromConfig.mode[3].modeType = MODE_ALTHOLD;
+        eepromConfig.mode[3].channel = AUX2;
+		eepromConfig.mode[3].state = false;
+		eepromConfig.mode[3].minChannelValue = 1000;
+		eepromConfig.mode[3].maxChannelValue = 1500;
+
+        eepromConfig.mode[4].modeType = MODE_ALTHOLD;
+        eepromConfig.mode[4].channel = AUX2;
+		eepromConfig.mode[4].state = true;
+		eepromConfig.mode[4].minChannelValue = 1500;
+		eepromConfig.mode[4].maxChannelValue = 2000;
+
+        eepromConfig.mode[5].modeType = MODE_NONE;
+        eepromConfig.mode[5].channel = AUX3;
+		eepromConfig.mode[5].state = true;
+		eepromConfig.mode[5].minChannelValue = 1000;
+		eepromConfig.mode[5].maxChannelValue = 1300;
+
+        eepromConfig.mode[6].modeType = MODE_POSITIONHOLD;
+        eepromConfig.mode[6].channel = AUX3;
+		eepromConfig.mode[6].state = true;
+		eepromConfig.mode[6].minChannelValue = 1300;
+		eepromConfig.mode[6].maxChannelValue = 1700;
+
+        eepromConfig.mode[7].modeType = MODE_AUTONAV;
+        eepromConfig.mode[7].channel = AUX3;
+		eepromConfig.mode[7].state = true;
+		eepromConfig.mode[7].minChannelValue = 1700;
+		eepromConfig.mode[7].maxChannelValue = 2000;
+
+        eepromConfig.mode[8].modeType = MODE_PANIC;
+        eepromConfig.mode[8].channel = AUX4;
+		eepromConfig.mode[8].state = false;
+		eepromConfig.mode[8].minChannelValue = 1000;
+		eepromConfig.mode[8].maxChannelValue = 1500;
+
+        eepromConfig.mode[9].modeType = MODE_PANIC;
+        eepromConfig.mode[9].channel = AUX4;
+		eepromConfig.mode[9].state = true;
+		eepromConfig.mode[9].minChannelValue = 1500;
+		eepromConfig.mode[9].maxChannelValue = 2000;
+
         ///////////////////////////////
 
         writeEEPROM();
