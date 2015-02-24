@@ -463,7 +463,7 @@ typedef struct eepromConfig_t
     ///////////////////////////////////
 
     uint8_t 		storedWaypointCount;
-    waypointType	route[MAX_WAYPOINTS];
+    waypoint_t	    route[MAX_WAYPOINTS];
     float			xteScaling;
     float			taeScaling;
 

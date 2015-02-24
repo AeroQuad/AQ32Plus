@@ -91,7 +91,7 @@ void computeAxisCommands(float dt)
 
     ///////////////////////////////////
 
-    if (headingHoldEngaged == true)  // Heading Hold is ON
+    if ((headingHoldEngaged == true) && (autoNavMode != MODE_AUTONAV))  // Heading Hold is ON
     {
     	error = standardRadianFormat(headingReference - heading.mag);
         rateCmd[YAW] = updatePID(error, dt, pidReset, &eepromConfig.PID[HEADING_PID]);
@@ -109,6 +109,13 @@ void computeAxisCommands(float dt)
 
     error = rateCmd[YAW] - sensors.gyro500Hz[YAW];
     ratePID[YAW] = updatePID(error, dt, pidReset, &eepromConfig.PID[YAW_RATE_PID  ]);
+
+    if (autoNavMode == MODE_AUTONAV)
+    {
+    	ratePID[ROLL]  += autoNavRollAxisCorrection;
+    	ratePID[PITCH] += autoNavPitchAxisCorrection;
+    	ratePID[YAW]   += autoNavYawAxisCorrection;
+    }
 
 	///////////////////////////////////
 

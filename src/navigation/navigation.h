@@ -41,12 +41,21 @@ typedef enum autoNavStates
 } autoNavStates;
 autoNavStates nextNavState;
 
-typedef struct waypointType
+typedef struct waypoint_t // this is for external comm/storage
 {
 	int latitude;
 	int longitude;
 	int altitude;
 	int speed;
+	int type;
+} waypoint_t;
+
+typedef struct waypointType // this is for internal use in AutoNav
+{
+	double latitude;
+	double longitude;
+	double altitude;
+	double speed;
 	int type;
 } waypointType;
 

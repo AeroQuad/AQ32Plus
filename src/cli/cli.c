@@ -451,16 +451,36 @@ void cliCom(void)
 
 			///////////////////////////////
 
-			case 'p': // Not Used
-				cliQuery = 'x';
-				validCliCommand = false;
+			case 'p': // Using for Nav Debug
+//				cliPortPrintF("CurrentLLA:%d,%d, CurrentWP:%d,%d, NextWP:%d,%d\n",
+//						currentPosition.latitude,
+//						currentPosition.longitude,
+//						fromWaypoint.latitude,
+//						fromWaypoint.longitude,
+//						toWaypoint.latitude,
+//						toWaypoint.longitude);
+				cliPortPrintF("roll:%d, pitch:%d, yaw:%d\n",
+						ratePID[ROLL],
+						ratePID[PITCH],
+						ratePID[YAW]);
+				//cliQuery = 'x';
+				//validCliCommand = false;
 				break;
 
 			///////////////////////////////
 
-			case 'q': // Not Used
-				cliQuery = 'x';
-				validCliCommand = false;
+			case 'q': // Using for Nav Debug
+            	cliPortPrintF("State:%d, WP:%d, P:%d, R:%d, Y:%d, TAE:%.3f, Curr:%.1f, Des:%.1f\n",
+            									nextNavState,
+            									waypointIndex,
+            									autoNavPitchAxisCorrection,
+            									autoNavRollAxisCorrection,
+            									autoNavYawAxisCorrection,
+            									trackAngleError,
+            									currentHeading,
+            									desiredHeading);
+				//cliQuery = 'x';
+				//validCliCommand = false;
 				break;
 
 			///////////////////////////////
@@ -885,7 +905,7 @@ void cliCom(void)
 				uint8_t msgType = cliPortRead();
 				switch (msgType) //update this
 				{
-					case 's':
+					case 's': // Write out vehicle status
 						if (statusType++ < 3)
 						{
 							cliPortPrint("0");
@@ -939,7 +959,7 @@ void cliCom(void)
 							eepromConfig.storedWaypointCount = readFloatCLI();
 						break;
 					}
-					case 'o': // Transmit out waypoints
+					case 'o': // Write out waypoints
 					{
 						int index = readFloatCLI();
 						if (index < 0)
@@ -956,7 +976,7 @@ void cliCom(void)
 						}
 					}
 					  break;
-					case '^': // Send autonav status
+					case '^': // Write out AutoNav status
 					{
 						int type = readFloatCLI();
 						if (type == 0) // send shortened position data
@@ -987,7 +1007,7 @@ void cliCom(void)
 								  homePosition.longitude,
 								  homePosition.altitude);
 						}
-					  break;
+					    break;
 					}
 					case '!': // send software version
 						cliPortPrintF("%s\n", __AQ32PLUS_VERSION);
@@ -998,7 +1018,7 @@ void cliCom(void)
 					case '>': // setup autopilot states
 						setAutoNavState(readFloatCLI());
 						break;
-					case 'M': // update mode setup
+					case 'M': // Read in mode setup
 					{
 						int slot = readFloatCLI();
 						eepromConfig.mode[slot].modeType = readFloatCLI();
@@ -1008,7 +1028,7 @@ void cliCom(void)
 						eepromConfig.mode[slot].maxChannelValue = readFloatCLI();
 						break;
 					}
-					case 'm': // send mode setup
+					case 'm': // Write out mode setup
 					{
 						int slot = readFloatCLI();
 						cliPortPrintF("%d,%d,%d,%d,%d,%d\n",
@@ -1020,6 +1040,28 @@ void cliCom(void)
 								eepromConfig.mode[slot].maxChannelValue);
 						break;
 					}
+					case 'A': // Read in AutoNav PIDs
+					{
+						int pidType = readFloatCLI();
+						readCliPID(pidType);
+						break;
+					}
+		            case 'a': // Write out AutoNav PIDs
+		                cliPortPrintF("%8.4f, %8.4f, %8.4f, %8.4f,", eepromConfig.PID[AUTONAV_ROLL_PID].P,
+		                    		                                 eepromConfig.PID[AUTONAV_ROLL_PID].I,
+		                    		                                 eepromConfig.PID[AUTONAV_ROLL_PID].D,
+		                    		                                 eepromConfig.PID[AUTONAV_ROLL_PID].Limit);
+
+		                cliPortPrintF("%8.4f, %8.4f, %8.4f, %8.4f,", eepromConfig.PID[AUTONAV_PITCH_PID].P,
+		                    		                                 eepromConfig.PID[AUTONAV_PITCH_PID].I,
+		                    		                                 eepromConfig.PID[AUTONAV_PITCH_PID].D,
+		                    		                                 eepromConfig.PID[AUTONAV_PITCH_PID].Limit);
+
+		                cliPortPrintF("%8.4f, %8.4f, %8.4f, %8.4f\n", eepromConfig.PID[AUTONAV_YAW_PID].P,
+		                    		                                  eepromConfig.PID[AUTONAV_YAW_PID].I,
+		                    		                                  eepromConfig.PID[AUTONAV_YAW_PID].D,
+		                    		                                  eepromConfig.PID[AUTONAV_YAW_PID].Limit);
+		                break;
 				}
 				cliQuery = 'x';
 				validCliCommand = false;

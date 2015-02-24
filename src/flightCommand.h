@@ -97,4 +97,4 @@ void processFlightCommands(void);
 extern void processAutoNavigation();
 extern void processPositionHold();
 extern void processReturnToHome();
-uint8_t autoNavMode;
+extern uint8_t autoNavMode;

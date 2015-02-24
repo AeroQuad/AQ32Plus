@@ -51,8 +51,8 @@ uint8_t  previousCommandInDetent[3] = { true, true, true };
 ///////////////////////////////////////////////////////////////////////////////
 
 uint8_t flightMode = RATE;
-
 uint8_t headingHoldEngaged     = false;
+uint8_t autoNavMode = MODE_NONE;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Arm State Variables
@@ -254,98 +254,179 @@ void processFlightCommands(void)
     // commands via serial to be sent
 	///////////////////////////////////////////////
 
-	// For each mode, check if it's mode channel has changed,
-    // then check if current mode channel is in range
-    // lastly, check if mode is enabled or disabled
-	int slot;
-	for (slot=0; slot<MODE_SLOTS; slot++)
+	// Search through each AUX channel
+    int ch;
+	for (ch=AUX1; ch<LASTCHANNEL; ch++)
 	{
-		uint8_t modeChannel = eepromConfig.mode[slot].channel;
-		// Detect of mode channel state changed
-		if (fabs(previousRxCommand[modeChannel] - rxCommand[modeChannel]) > CHANGE_RANGE)
+		// Only make update if channel value changed
+		if (fabs(previousRxCommand[ch] - rxCommand[ch]) > CHANGE_RANGE)
 		{
-			// Detect if mode channel is within defined range
-			if ((rxCommand[modeChannel]>= eepromConfig.mode[slot].minChannelValue) && (rxCommand[modeChannel] < eepromConfig.mode[slot].maxChannelValue))
+			// Search through each mode slot
+			int slot;
+			for (slot=1; slot < MODE_SLOTS; slot++)
 			{
-				if (eepromConfig.mode[slot].state) // Mode is in ON state
+				// If mode slot uses current rx channel, update if mode is on/off
+				if (eepromConfig.mode[slot].channel == ch)
 				{
-					switch (eepromConfig.mode[slot].modeType)
+					// Only change the mode state if the rx channels are in range
+					int chValue = constrain(rxCommand[ch]/2, 1000, 2000);
+					if ((chValue >= eepromConfig.mode[slot].minChannelValue) && (chValue <= eepromConfig.mode[slot].maxChannelValue))
 					{
-						case MODE_ATTITUDE:
-							flightMode = ATTITUDE;
-							setPIDstates(ROLL_ATT_PID,  0.0f);
-							setPIDstates(PITCH_ATT_PID, 0.0f);
-							setPIDstates(HEADING_PID,   0.0f);
-							break;
-						case MODE_RATE:
-							flightMode = RATE;
-							setPIDstates(ROLL_RATE_PID,  0.0f);
-							setPIDstates(PITCH_RATE_PID, 0.0f);
-							setPIDstates(YAW_RATE_PID,   0.0f);
-							break;
-						case MODE_SIMPLE:
-							hdgDelta = sensors.attitude500Hz[YAW] - homeData.magHeading;
-							hdgDelta = standardRadianFormat(hdgDelta);
-							simpleX = cosf(hdgDelta) * rxCommand[PITCH] + sinf(hdgDelta) * rxCommand[ROLL ];
-							simpleY = cosf(hdgDelta) * rxCommand[ROLL ] - sinf(hdgDelta) * rxCommand[PITCH];
-							rxCommand[ROLL ] = simpleY;
-							rxCommand[PITCH] = simpleX;
-							break;
-						case MODE_AUTONAV:
-							autoNavMode = MODE_AUTONAV;
-							flightMode = ATTITUDE;
-							verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
-							break;
-						case MODE_POSITIONHOLD:
-							autoNavMode = MODE_POSITIONHOLD;
-							flightMode = ATTITUDE;
-							verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
-							break;
-						case MODE_RETURNTOHOME:
-							autoNavMode = MODE_RETURNTOHOME;
-							flightMode = ATTITUDE;
-							verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
-							break;
-						case MODE_ALTHOLD:
-							// Altitude Hold is On
-							if (verticalModeState == ALT_DISENGAGED_THROTTLE_ACTIVE)
-							{
-								verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
-								setPIDstates(HDOT_PID, 0.0f);
-								setPIDstates(H_PID, 0.0f);
-								altitudeHoldReference = hEstimate;
-								throttleReference = rxCommand[THROTTLE];
-							}
-							else if (verticalModeState == ALT_DISENGAGED_THROTTLE_INACTIVE)
-								verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
-							break;
-						case MODE_PANIC:
-							autoNavMode = MODE_NONE;
-							verticalModeState = ALT_DISENGAGED_THROTTLE_ACTIVE;
-							break;
-					}
-				}
-				else // Mode is in OFF state
-				{
-					if (eepromConfig.mode[slot].modeType == MODE_ALTHOLD)
-					{
-						// Altitude Hold is Off
-						if (verticalModeState == VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY)
+						switch(eepromConfig.mode[slot].modeType)
 						{
-							verticalModeState = ALT_DISENGAGED_THROTTLE_INACTIVE;
-							altitudeHoldReference = hEstimate;
+							case MODE_NONE:
+								flightMode = ATTITUDE;
+								verticalModeState = ALT_DISENGAGED_THROTTLE_INACTIVE;
+								autoNavMode = MODE_NONE;
+								break;
+
+							case MODE_ATTITUDE:
+								autoNavMode = MODE_NONE;
+								if (eepromConfig.mode[slot].state)
+								{
+									flightMode = ATTITUDE;
+									setPIDstates(ROLL_ATT_PID,  0.0f);
+									setPIDstates(PITCH_ATT_PID, 0.0f);
+									setPIDstates(HEADING_PID,   0.0f);
+								}
+								else
+								{
+									// if OFF and no other mode set, default to rate mode
+									flightMode = RATE;
+									setPIDstates(ROLL_RATE_PID,  0.0f);
+									setPIDstates(PITCH_RATE_PID, 0.0f);
+									setPIDstates(YAW_RATE_PID,   0.0f);
+								}
+								break;
+
+							case MODE_RATE:
+								autoNavMode = MODE_NONE;
+								if (eepromConfig.mode[slot].state)
+								{
+									flightMode = RATE;
+									setPIDstates(ROLL_RATE_PID,  0.0f);
+									setPIDstates(PITCH_RATE_PID, 0.0f);
+									setPIDstates(YAW_RATE_PID,   0.0f);
+								}
+								else
+								{
+									// if OFF and no other mode set, default to attitude mode
+									flightMode = ATTITUDE;
+									setPIDstates(ROLL_ATT_PID,  0.0f);
+									setPIDstates(PITCH_ATT_PID, 0.0f);
+									setPIDstates(HEADING_PID,   0.0f);
+								}
+								break;
+
+							case MODE_SIMPLE:
+								autoNavMode = MODE_NONE;
+								if (eepromConfig.mode[slot].state)
+								{
+									flightMode = MODE_SIMPLE;
+									hdgDelta = sensors.attitude500Hz[YAW] - homeData.magHeading;
+									hdgDelta = standardRadianFormat(hdgDelta);
+									simpleX = cosf(hdgDelta) * rxCommand[PITCH] + sinf(hdgDelta) * rxCommand[ROLL ];
+									simpleY = cosf(hdgDelta) * rxCommand[ROLL ] - sinf(hdgDelta) * rxCommand[PITCH];
+									rxCommand[ROLL ] = simpleY;
+									rxCommand[PITCH] = simpleX;
+								}
+								else
+								{
+									// if OFF and no other mode set, default to attitude mode
+									flightMode = ATTITUDE;
+									setPIDstates(ROLL_ATT_PID,  0.0f);
+									setPIDstates(PITCH_ATT_PID, 0.0f);
+									setPIDstates(HEADING_PID,   0.0f);
+								}
+								break;
+
+							case MODE_AUTONAV:
+								if (eepromConfig.mode[slot].state)
+								{
+									flightMode = ATTITUDE;
+									//verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
+									autoNavMode = MODE_AUTONAV;
+									setAutoNavState(AUTONAV_ENABLED);
+								}
+								else
+								{
+									flightMode = ATTITUDE;
+									//verticalModeState = ALT_DISENGAGED_THROTTLE_INACTIVE;
+									autoNavMode = MODE_NONE;
+									setAutoNavState(AUTONAV_DISABLED);
+								}
+								break;
+
+							case MODE_POSITIONHOLD:
+								if (eepromConfig.mode[slot].state)
+								{
+									flightMode = ATTITUDE;
+									//verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
+									autoNavMode = MODE_POSITIONHOLD;
+								}
+								else
+								{
+									flightMode = ATTITUDE;
+									//verticalModeState = ALT_DISENGAGED_THROTTLE_INACTIVE;
+									autoNavMode = MODE_NONE;
+								}
+								break;
+
+							case MODE_RETURNTOHOME:
+								if (eepromConfig.mode[slot].state)
+								{
+									flightMode = ATTITUDE;
+									//verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
+									autoNavMode = MODE_RETURNTOHOME;
+								}
+								else
+								{
+									flightMode = ATTITUDE;
+									//verticalModeState = ALT_DISENGAGED_THROTTLE_INACTIVE;
+									autoNavMode = MODE_NONE;
+								}
+								break;
+
+							case MODE_ALTHOLD:
+								if (eepromConfig.mode[slot].state)
+								{
+									if (verticalModeState == ALT_DISENGAGED_THROTTLE_ACTIVE)
+									{
+										verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
+										setPIDstates(HDOT_PID, 0.0f);
+										setPIDstates(H_PID, 0.0f);
+										altitudeHoldReference = hEstimate;
+										throttleReference = rxCommand[THROTTLE];
+									}
+									else if (verticalModeState == ALT_DISENGAGED_THROTTLE_INACTIVE)
+										verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
+								}
+								else
+									if (verticalModeState == VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY)
+									{
+										verticalModeState = ALT_DISENGAGED_THROTTLE_INACTIVE;
+										altitudeHoldReference = hEstimate;
+									}
+									else
+										verticalModeState = ALT_DISENGAGED_THROTTLE_INACTIVE;
+								break;
+
+
+							case MODE_PANIC:
+								if (eepromConfig.mode[slot].state)
+								{
+									flightMode = ATTITUDE;
+									verticalModeState = ALT_DISENGAGED_THROTTLE_ACTIVE;
+									autoNavMode = MODE_PANIC;
+								}
+								break;
 						}
-						else
-							verticalModeState = ALT_DISENGAGED_THROTTLE_INACTIVE;
 					}
 				}
 			}
 		}
+		previousRxCommand[ch] = rxCommand[ch];
 	}
-
-	// Record previous channel values to check if changed in next iteration
-	for (channel=AUX1; channel<LASTCHANNEL; channel++)
-		previousRxCommand[channel] = rxCommand[channel];
 
     ///////////////////////////////////
     // AutoNavigation State Machine
@@ -353,6 +434,9 @@ void processFlightCommands(void)
 	switch (autoNavMode)
 	{
 		case MODE_NONE:
+			autoNavPitchAxisCorrection = 0.0;
+			autoNavRollAxisCorrection = 0.0;
+			autoNavYawAxisCorrection = 0.0;
 			break;
 		case MODE_AUTONAV:
 			processAutoNavigation();
@@ -394,7 +478,3 @@ void processFlightCommands(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-
-
-

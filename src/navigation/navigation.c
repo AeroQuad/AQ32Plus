@@ -13,6 +13,7 @@ const double Deg2PWMFactor = MAXPWM/MAXTRACKANGLE; // convert degrees into PWM
 const double Meters2DegFactor = MAXCROSSTRACKANGLE/MAXCROSSTRACKDISTANCE; // convert meters into degrees
 const double zVector[3] = {0.0, 0.0, 1.0};
 double const earthRadius = 6378100.0; // meters
+double const GPS2DEG = 1.0E7;
 
 ////////////////////////////////////////////////////////////////////////////////
 //  Vector Dot Product for Double
@@ -104,10 +105,10 @@ int getWaypointCount()
 
 void processAutoNavigation()
 {
-	currentPosition.latitude = gps.latitude;
-	currentPosition.longitude = gps.longitude;
+	currentPosition.latitude = (double)gps.latitude / GPS2DEG;
+	currentPosition.longitude = (double)gps.longitude / GPS2DEG;
 	currentPosition.altitude = gps.height;
-	double heading = sensors.attitude500Hz[YAW] * R2D;
+	double heading = (double)sensors.attitude500Hz[YAW] * R2D;
 	heading = (heading > 180.0) ? (heading - 360.0) : heading;
 
 	switch(nextNavState)
@@ -123,8 +124,10 @@ void processAutoNavigation()
 
 		// Creates one time path from current position to first waypoint
 		fromWaypoint = currentPosition;
-		toWaypoint = eepromConfig.route[0];
-		followingWaypoint = eepromConfig.route[1];
+		toWaypoint.latitude = (double)eepromConfig.route[0].latitude / GPS2DEG;
+		toWaypoint.longitude = (double)eepromConfig.route[0].longitude / GPS2DEG;
+		followingWaypoint.latitude = (double)eepromConfig.route[1].latitude / GPS2DEG;
+		followingWaypoint.longitude = (double)eepromConfig.route[1].longitude / GPS2DEG;
 		positionVector(fromVector, fromWaypoint);
 		positionVector(toVector, toWaypoint);
 		vectorCrossProduct(normalVector, fromVector, toVector);
@@ -180,9 +183,12 @@ void processAutoNavigation()
 		waypointIndex++;
 		if (waypointIndex < (waypointCount-1))
 		{
-			fromWaypoint = eepromConfig.route[waypointIndex];
-			toWaypoint = eepromConfig.route[waypointIndex+1];
-			followingWaypoint = eepromConfig.route[waypointIndex+2];
+			fromWaypoint.latitude = (double)eepromConfig.route[waypointIndex].latitude / GPS2DEG;
+			fromWaypoint.longitude = (double)eepromConfig.route[waypointIndex].longitude / GPS2DEG;
+			toWaypoint.latitude = (double)eepromConfig.route[waypointIndex+1].latitude / GPS2DEG;
+			toWaypoint.longitude = (double)eepromConfig.route[waypointIndex+1].longitude / GPS2DEG;
+			followingWaypoint.latitude = (double)eepromConfig.route[waypointIndex+2].latitude / GPS2DEG;
+			followingWaypoint.longitude = (double)eepromConfig.route[waypointIndex+2].longitude / GPS2DEG;
 			positionVector(fromVector, fromWaypoint);
 			positionVector(toVector, toWaypoint);
 			vectorCrossProduct(normalVector, fromVector, toVector);
@@ -204,6 +210,8 @@ void processAutoNavigation()
 		break;
 	case DISABLED:
 		autoNavPitchAxisCorrection = 0.0;
+		autoNavRollAxisCorrection = 0.0;
+		autoNavYawAxisCorrection = 0.0;
 		break;
 	default:
 		break;

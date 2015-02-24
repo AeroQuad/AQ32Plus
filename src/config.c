@@ -499,17 +499,20 @@ void checkFirstTime(bool eepromReset)
         eepromConfig.externalHMC5883          = 0;
         eepromConfig.externalMS5611           = false;
 
-        eepromConfig.xteScaling			    	= 1.0;
-        eepromConfig.taeScaling			    	= 1.0;
-        eepromConfig.PID[AUTONAV_ROLL_PID].P	= 1.0;
-        eepromConfig.PID[AUTONAV_ROLL_PID].I	= 0.0;
-        eepromConfig.PID[AUTONAV_ROLL_PID].D	= 0.0;
-        eepromConfig.PID[AUTONAV_PITCH_PID].P	= 1.0;
-        eepromConfig.PID[AUTONAV_PITCH_PID].I	= 0.0;
-        eepromConfig.PID[AUTONAV_PITCH_PID].D	= 0.0;
-        eepromConfig.PID[AUTONAV_YAW_PID].P		= 1.0;
-        eepromConfig.PID[AUTONAV_YAW_PID].I		= 0.0;
-        eepromConfig.PID[AUTONAV_YAW_PID].D		= 0.0;
+        eepromConfig.xteScaling			    	  = 1.0;
+        eepromConfig.taeScaling			    	  = 1.0;
+        eepromConfig.PID[AUTONAV_ROLL_PID].P	  = 1.0;
+        eepromConfig.PID[AUTONAV_ROLL_PID].I	  = 0.0;
+        eepromConfig.PID[AUTONAV_ROLL_PID].D	  = 0.0;
+        eepromConfig.PID[AUTONAV_ROLL_PID].Limit  = 100.0;
+        eepromConfig.PID[AUTONAV_PITCH_PID].P	  = 1.0;
+        eepromConfig.PID[AUTONAV_PITCH_PID].I	  = 0.0;
+        eepromConfig.PID[AUTONAV_PITCH_PID].D	  = 0.0;
+        eepromConfig.PID[AUTONAV_PITCH_PID].Limit = 100.0;
+        eepromConfig.PID[AUTONAV_YAW_PID].P		  = 1.0;
+        eepromConfig.PID[AUTONAV_YAW_PID].I		  = 0.0;
+        eepromConfig.PID[AUTONAV_YAW_PID].D		  = 0.0;
+        eepromConfig.PID[AUTONAV_PITCH_PID].Limit = 100.0;
 
         ///////////////////////////////
 
