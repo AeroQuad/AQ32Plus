@@ -1062,6 +1062,12 @@ void cliCom(void)
 		                    		                                  eepromConfig.PID[AUTONAV_YAW_PID].D,
 		                    		                                  eepromConfig.PID[AUTONAV_YAW_PID].Limit);
 		                break;
+		            case 'C':
+		            	eepromConfig.xteScaling = readFloatCLI();
+		            	break;
+		            case 'c':
+		            	cliPortPrintF("%.3f\n", eepromConfig.xteScaling);
+		            	break;
 				}
 				cliQuery = 'x';
 				validCliCommand = false;

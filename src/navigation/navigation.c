@@ -136,6 +136,7 @@ void processAutoNavigation()
 		negNormalVector[1] = -normalVector[1];
 		negNormalVector[2] = -normalVector[2];
 		waypointIndex = PRE_WAYPOINT;
+		waypointCount = eepromConfig.storedWaypointCount;
 		nextNavState = PROCESS_NAVIGATION;
 		break;
 	case PROCESS_NAVIGATION:
@@ -158,7 +159,7 @@ void processAutoNavigation()
 		vectorCrossProduct(alongPathVector, normalVector, normalPerpendicularVector);
 		vectorNormalize(alongPathVector);
 		crossTrack = earthRadius * atan2(vectorDotProduct(negNormalVector, presentPosition), vectorDotProduct(alongPathVector, presentPosition));
-		crossTrackError = -crossTrack * eepromConfig.xteScaling;
+		crossTrackError = -crossTrack * eepromConfig.xteScaling * Meters2DegFactor;
 
 		// Calculate distance to next waypoint
 		vectorCrossProduct(normalRangeVector, presentPosition, toVector);
