@@ -65,8 +65,10 @@ void vectorNormalize(double result[])
 ////////////////////////////////////////////////////////////////////////////////
 
 void positionVector(double *vector, waypointType position) {
-  double lat = (double)position.latitude / 10000000.0;
-  double lon = (double)position.longitude / 10000000.0;
+//  double lat = (double)position.latitude / 10000000.0;
+//  double lon = (double)position.longitude / 10000000.0;
+  double lat = (double)position.latitude * D2R;
+  double lon = (double)position.longitude * D2R;
   vector[0] = cos(lat) * cos(lon);
   vector[1] = cos(lat) * sin(lon);
   vector[2] = sin(lat);
@@ -148,10 +150,10 @@ void processAutoNavigation()
 		vectorNormalize(presentPositionEast);
 		vectorCrossProduct(presentPositionNorth, presentPosition, presentPositionEast);
 		vectorNormalize(presentPositionNorth);
-		desiredHeading = atan2(vectorDotProduct(normalVector, presentPositionNorth), vectorDotProduct(negNormalVector, presentPositionEast)) * R2D;
-		currentHeading = adjustHeading(heading, desiredHeading);
+		courseHeading = atan2(vectorDotProduct(normalVector, presentPositionNorth), vectorDotProduct(negNormalVector, presentPositionEast)) * R2D;
+		currentHeading = adjustHeading(heading, courseHeading);
 		// units of track angle error is degrees
-		trackAngleError = constrain((desiredHeading-currentHeading) * eepromConfig.taeScaling, -MAXTRACKANGLE, MAXTRACKANGLE);
+		trackAngleError = constrain((courseHeading-currentHeading) * eepromConfig.taeScaling, -MAXTRACKANGLE, MAXTRACKANGLE);
 
 		// Calculate cross track error
 		vectorCrossProduct(normalPerpendicularVector, presentPosition, normalVector);
@@ -161,6 +163,9 @@ void processAutoNavigation()
 		crossTrack = earthRadius * atan2(vectorDotProduct(negNormalVector, presentPosition), vectorDotProduct(alongPathVector, presentPosition));
 		crossTrackError = -crossTrack * eepromConfig.xteScaling * Meters2DegFactor;
 
+		// double check signs here
+		desiredHeading = currentHeading + (trackAngleError + crossTrackError);
+
 		// Calculate distance to next waypoint
 		vectorCrossProduct(normalRangeVector, presentPosition, toVector);
 		vectorNormalize(normalRangeVector);
@@ -169,9 +174,9 @@ void processAutoNavigation()
 		distanceToNextWaypoint = earthRadius * atan2(vectorDotProduct(rangeVector, presentPosition), vectorDotProduct(presentPosition, toVector));
 
 		// These corrections need to be PWM centered around 0
-		autoNavPitchAxisCorrection = forwardSpeed * Deg2PWMFactor * eepromConfig.PID[AUTONAV_PITCH_PID].P; // pitch forward in degrees
-		autoNavRollAxisCorrection = constrain(trackAngleError + crossTrackError, -MAXBANKANGLE, MAXBANKANGLE) * Deg2PWMFactor * eepromConfig.PID[AUTONAV_ROLL_PID].P;
-		autoNavYawAxisCorrection = constrain(trackAngleError + crossTrackError, -MAXBANKANGLE, MAXBANKANGLE) * Deg2PWMFactor * eepromConfig.PID[AUTONAV_YAW_PID].P;
+		autoNavPitchAxisCorrection = forwardSpeed * Deg2PWMFactor; // pitch forward in degrees
+		autoNavRollAxisCorrection = constrain(trackAngleError + crossTrackError, -MAXBANKANGLE, MAXBANKANGLE) * Deg2PWMFactor;
+		autoNavYawAxisCorrection = constrain(trackAngleError + crossTrackError, -MAXBANKANGLE, MAXBANKANGLE) * Deg2PWMFactor;
 
 		double check = ((toWaypoint.longitude - currentPosition.longitude) * (toWaypoint.longitude - fromWaypoint.longitude)) +
 		               ((toWaypoint.latitude  - currentPosition.latitude)  * (toWaypoint.latitude  - fromWaypoint.latitude));

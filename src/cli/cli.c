@@ -459,10 +459,8 @@ void cliCom(void)
 //						fromWaypoint.longitude,
 //						toWaypoint.latitude,
 //						toWaypoint.longitude);
-				cliPortPrintF("roll:%d, pitch:%d, yaw:%d\n",
-						ratePID[ROLL],
-						ratePID[PITCH],
-						ratePID[YAW]);
+				cliPortPrintF("xt:%.9f, xte:%.9f, dist:%.3f\n",
+						crossTrack, crossTrackError, distanceToNextWaypoint);
 				//cliQuery = 'x';
 				//validCliCommand = false;
 				break;
@@ -470,7 +468,7 @@ void cliCom(void)
 			///////////////////////////////
 
 			case 'q': // Using for Nav Debug
-            	cliPortPrintF("State:%d, WP:%d, P:%d, R:%d, Y:%d, TAE:%.3f, Curr:%.1f, Des:%.1f\n",
+            	cliPortPrintF("State:%d, WP:%d, P:%d, R:%d, Y:%d, TAE:%.3f, Curr:%.1f, Des:%.1f, Dist:%.8f\n",
             									nextNavState,
             									waypointIndex,
             									autoNavPitchAxisCorrection,
@@ -478,7 +476,8 @@ void cliCom(void)
             									autoNavYawAxisCorrection,
             									trackAngleError,
             									currentHeading,
-            									desiredHeading);
+            									desiredHeading,
+            									distanceToNextWaypoint);
 				//cliQuery = 'x';
 				//validCliCommand = false;
 				break;

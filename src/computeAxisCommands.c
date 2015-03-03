@@ -112,9 +112,9 @@ void computeAxisCommands(float dt)
 
     if (autoNavMode == MODE_AUTONAV)
     {
-    	ratePID[ROLL]  += autoNavRollAxisCorrection;
-    	ratePID[PITCH] += autoNavPitchAxisCorrection;
-    	ratePID[YAW]   += autoNavYawAxisCorrection;
+    	ratePID[ROLL]  += updatePID(autoNavRollAxisCorrection, dt, pidReset, &eepromConfig.PID[AUTONAV_ROLL_PID]);
+    	ratePID[PITCH] += updatePID(autoNavPitchAxisCorrection, dt, pidReset, &eepromConfig.PID[AUTONAV_PITCH_PID]);
+    	ratePID[YAW]   += updatePID(autoNavYawAxisCorrection, dt, pidReset, &eepromConfig.PID[AUTONAV_YAW_PID]);
     }
 
 	///////////////////////////////////

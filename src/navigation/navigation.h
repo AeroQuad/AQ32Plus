@@ -77,7 +77,7 @@ double normalRangeVector[3], rangeVector[3];
 extern const double zVector[3];
 double normalVector[3], normalPerpendicularVector[3], alongPathVector[3], negNormalVector[3];
 waypointType fromWaypoint, toWaypoint, currentPosition, followingWaypoint;
-double desiredHeading, groundTrackHeading;
+double desiredHeading, courseHeading;
 double trackAngleError, crossTrackError, crossTrack, alongPathDistance;
 double distanceToNextWaypoint;
 extern const double earthRadius; // meters
