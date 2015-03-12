@@ -112,9 +112,15 @@ void computeAxisCommands(float dt)
 
     if (autoNavMode == MODE_AUTONAV)
     {
-    	ratePID[ROLL]  += updatePID(autoNavRollAxisCorrection, dt, pidReset, &eepromConfig.PID[AUTONAV_ROLL_PID]);
-    	ratePID[PITCH] += updatePID(autoNavPitchAxisCorrection, dt, pidReset, &eepromConfig.PID[AUTONAV_PITCH_PID]);
-    	ratePID[YAW]   += updatePID(autoNavYawAxisCorrection, dt, pidReset, &eepromConfig.PID[AUTONAV_YAW_PID]);
+    	ratePID[ROLL]  += sinf((desiredHeading - currentHeading) * D2R) * autoNavSpeed * Deg2PWMFactor;
+    	ratePID[PITCH] += cosf((desiredHeading - currentHeading) * D2R) * autoNavSpeed * Deg2PWMFactor;
+    	autoNavHeading = 0.0; // update this in the future
+    	error = standardRadianFormat(autoNavHeading - heading.mag);
+        rateCmd[YAW] = updatePID(error, dt, pidReset, &eepromConfig.PID[HEADING_PID]);
+
+//    	ratePID[ROLL]  += updatePID(autoNavRollAxisCorrection, dt, pidReset, &eepromConfig.PID[AUTONAV_ROLL_PID]);
+//    	ratePID[PITCH] += updatePID(autoNavPitchAxisCorrection, dt, pidReset, &eepromConfig.PID[AUTONAV_PITCH_PID]);
+//    	ratePID[YAW]   += updatePID(autoNavYawAxisCorrection, dt, pidReset, &eepromConfig.PID[AUTONAV_YAW_PID]);
     }
 
 	///////////////////////////////////

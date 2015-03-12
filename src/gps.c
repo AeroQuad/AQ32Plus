@@ -57,3 +57,11 @@ uint8_t gpsValid(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void calculateVelocity(float dt)
+{
+	calcVelN = (float)(previousLLA.latitude - gps.latitude) / dt; // cm/s
+	calcVelE = (float)(previousLLA.longitude - gps.longitude) / dt;
+	previousLLA.latitude = gps.latitude;
+	previousLLA.longitude = gps.longitude;
+}

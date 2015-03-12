@@ -88,7 +88,8 @@ double currentHeading;
 int autoNavRollAxisCorrection;
 int autoNavPitchAxisCorrection;
 int autoNavYawAxisCorrection;
-float forwardSpeed;
+float autoNavSpeed;
+float autoNavHeading;
 
 //byte navigatorSerialCommand = OFF; // TODO: remove when autopilot working
 //bool isRouteInitialized = false;

@@ -117,7 +117,7 @@ void processAutoNavigation()
 	{
 	case INITIALIZE:
 		waypointCaptureDistance = 2.0; // meters
-		forwardSpeed = 15.0;
+		autoNavSpeed = 15.0; // = (float)eepromConfig.route[0].speed;
 
 		distanceToNextWaypoint = 99999999.0;
 		autoNavRollAxisCorrection	= 0;
@@ -174,7 +174,7 @@ void processAutoNavigation()
 		distanceToNextWaypoint = earthRadius * atan2(vectorDotProduct(rangeVector, presentPosition), vectorDotProduct(presentPosition, toVector));
 
 		// These corrections need to be PWM centered around 0
-		autoNavPitchAxisCorrection = forwardSpeed * Deg2PWMFactor; // pitch forward in degrees
+		autoNavPitchAxisCorrection = autoNavSpeed * Deg2PWMFactor; // pitch forward in degrees
 		autoNavRollAxisCorrection = constrain(trackAngleError + crossTrackError, -MAXBANKANGLE, MAXBANKANGLE) * Deg2PWMFactor;
 		autoNavYawAxisCorrection = constrain(trackAngleError + crossTrackError, -MAXBANKANGLE, MAXBANKANGLE) * Deg2PWMFactor;
 
@@ -195,6 +195,7 @@ void processAutoNavigation()
 			toWaypoint.longitude = (double)eepromConfig.route[waypointIndex+1].longitude / GPS2DEG;
 			followingWaypoint.latitude = (double)eepromConfig.route[waypointIndex+2].latitude / GPS2DEG;
 			followingWaypoint.longitude = (double)eepromConfig.route[waypointIndex+2].longitude / GPS2DEG;
+			// autoNavSpeed = (float)eepromConfig.route[waypointIndex].speed;
 			positionVector(fromVector, fromWaypoint);
 			positionVector(toVector, toWaypoint);
 			vectorCrossProduct(normalVector, fromVector, toVector);
